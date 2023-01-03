@@ -1,4 +1,4 @@
-ame: Workflow for Codecov example-typescript
+name: Workflow for Codecov example-typescript
 on: [push, pull_request]
 jobs:
   run:
