@@ -1,47 +1,22 @@
-name: Github Actions Typescript Standard
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+ame: Workflow for Codecov example-typescript
+on: [push, pull_request]
 jobs:
-  test-and-upstream:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node 18
+        uses: actions/setup-node@v3
         with:
-          fetch-depth: 2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: 18
       - name: Install dependencies
-        run: |
-          sudo chown -R $USER /usr/local
-          npm uninstall typescript --no-save
-          npm uninstall tslint --no-save
-          npm install
-          npm install -g codecov
-          npm install -g request
-      - name: Run Tests
-        env:
-          API_KEY: ${{ secrets.API_KEY }}
-          CORRECT_COVERAGE: ${{ secrets.CORRECT_COVERAGE }}
-        run: |
-          npm t
-          codecov
-          node request.js
-      - name: Upstream to Standards
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          COVERAGE_SOURCE_FILE: ${{ secrets.COVERAGE_SOURCE_FILE }}
-        if: ${{ github.event_name == 'push'}}
-        run: |
-          wget --header "Authorization: token ${GH_TOKEN}" \
-          --header "Accept: application/vnd.github.v3.raw" \
-          https://api.github.com/repos/codecov/standards/contents/upstream.sh
-          bash upstream.sh
+        run: npm install
+      - name: Run tests and collect coverage
+        run: npm run test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          verbose: true
+          name: codecov-standard-typescript
+
